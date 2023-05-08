@@ -1,0 +1,124 @@
+name: VapourCod3r Alpha
+
+run-name: "VapourCod3r for ${{ inputs.AnimeName }} ${{ inputs.EpLabel }} with Q${{ inputs.QScale }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      AnimeName:
+        description: "AnimeName"
+        required: true
+        type: choice
+        options:
+        - "Oshi.no.Ko"
+      EpLabel:
+        description: "EpLabel, S0[0-9]E[0-9][0-9]"
+        required: true
+        type: string
+        default: "S01E01"
+      EncSpeed:
+        description: "EncSpeed"
+        required: true
+        type: choice
+        options:
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+      QScale:
+        description: "QScale, 13-43"
+        required: true
+        type: number
+
+env:
+  AnimeName: ${{ github.event.inputs.AnimeName }}
+  EpLabel: ${{ github.event.inputs.EpLabel }}
+  EncSpeed: ${{ github.event.inputs.EncSpeed }}
+  QScale: ${{ github.event.inputs.QScale }}
+  VapourCod3r_Hash: ${{ secrets.VapourCod3r_Hash }}
+  RCLONE_CONFIG_HASH: ${{ secrets.RCLONE_CONFIG_HASH }}
+
+jobs:
+  generator:
+    name: "Prepare Matrix for Jobs"
+    runs-on: ubuntu-22.04
+
+    outputs:
+      latestRevision: ${{ steps.set-params.outputs.latestRevision }}
+      matrix: ${{ steps.set-params.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: GitHub Auth
+        uses: rokibhasansagar/custom_workflows/git_config@main
+        env:
+          PAT: ${{ secrets.GH_TOKEN }}
+      - name: Create EncMatrix
+        id: set-params
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          # Get GIST latest Revision number
+          export latestRevision=$(curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/" | grep "/matrixGen\.sh" | awk -F'/raw/' '{print $2}' | awk -F'/' '{print $1}')
+          echo "latestRevision=${latestRevision}" >> $GITHUB_OUTPUT
+          # Generate Workflow Matrix
+          curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/matrixGen.sh" -O
+          source ./matrixGen.sh
+          eval 'set -o history' 2>/dev/null
+
+  synthesizer:
+    name: "Synthesize Video with Vapour"
+    runs-on: ubuntu-22.04
+    needs: generator
+
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        ChunkID: ${{fromJson(needs.generator.outputs.matrix)}}
+    env:
+      ChunkID: ${{ matrix.ChunkID }}
+      latestRevision: ${{ needs.generator.outputs.latestRevision }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: GitHub Auth
+        uses: rokibhasansagar/custom_workflows/git_config@main
+        env:
+          PAT: ${{ secrets.GH_TOKEN }}
+      - name: VapourCod3r - Chunk ${{env.ChunkID}} from ${{env.AnimeName}} ${{env.EpLabel}}
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          # All-in-one Script for VapourCod3r
+          curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/vapourGen.sh" -O
+          source ./vapourGen.sh
+          eval 'set -o history' 2>/dev/null
+
+  merger:
+    name: "Join Synthesized Video"
+    runs-on: ubuntu-22.04
+    needs: [generator, synthesizer]
+
+    env:
+      latestRevision: ${{ needs.generator.outputs.latestRevision }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'main'
+      - name: GitHub Auth
+        uses: rokibhasansagar/custom_workflows/git_config@main
+        env:
+          PAT: ${{ secrets.GH_TOKEN }}
+      - name: Joiner for VapourCod3d ${{env.AnimeName}} ${{env.EpLabel}}
+        run: |
+          eval 'set -eo pipefail' 2>/dev/null
+          eval 'set +o history' 2>/dev/null
+          # All-in-one Script for VapourCod3r
+          curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/xJoiner.sh" -O
+          source ./xJoiner.sh
+          eval 'set -o history' 2>/dev/null
