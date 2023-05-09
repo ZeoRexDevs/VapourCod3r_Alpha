@@ -29,12 +29,18 @@ on:
         description: "QScale, 13-43"
         required: true
         type: number
+      ForceRecode:
+        description: "ForceRecode"
+        required: true
+        type: boolean
+        default: false
 
 env:
   AnimeName: ${{ github.event.inputs.AnimeName }}
   EpLabel: ${{ github.event.inputs.EpLabel }}
   EncSpeed: ${{ github.event.inputs.EncSpeed }}
   QScale: ${{ github.event.inputs.QScale }}
+  ForceRecode: ${{ github.event.inputs.ForceRecode }}
   VapourCod3r_Hash: ${{ secrets.VapourCod3r_Hash }}
   RCLONE_CONFIG_HASH: ${{ secrets.RCLONE_CONFIG_HASH }}
 
