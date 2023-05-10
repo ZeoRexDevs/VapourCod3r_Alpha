@@ -80,6 +80,18 @@ jobs:
           curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/matrixGen.sh" -O
           source ./matrixGen.sh
           eval 'set -o history' 2>/dev/null
+      - name: Upload Source Media as Artifact
+        uses: actions/upload-artifact@v3
+        continue-on-error: true
+        with:
+          path: ~/data/source_artifact.tar
+          retention-days: 2
+      - name: Upload Source Media as Artifact
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          path: ~/data/source_artifact.tar
+          retention-days: 2
 
   synthesizer:
     name: "Vapour Synthesizer"
@@ -105,6 +117,10 @@ jobs:
         uses: rokibhasansagar/custom_workflows/git_config@main
         env:
           PAT: ${{ secrets.GH_TOKEN }}
+      - name: Download Source Media from Artifact
+        uses: actions/download-artifact@v3
+        with:
+          path: ~/data/
       - name: VapourCod3r - Chunk ${{env.ChunkID}} from ${{env.AnimeName}} ${{env.EpLabel}}
         run: |
           eval 'set -eo pipefail' 2>/dev/null
