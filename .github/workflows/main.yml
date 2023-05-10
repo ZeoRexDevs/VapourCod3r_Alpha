@@ -24,11 +24,15 @@ on:
         - "2"
         - "3"
         - "4"
-        - "5"
       QScale:
-        description: "QScale, 13-43"
+        description: "QScale, 13~43"
         required: true
         type: number
+      VidRes:
+        description: "VidRes, 576p || 1024x576"  # AR = 16/9
+        required: true
+        type: string
+        default: "576p"
       ForceRecode:
         description: "ForceRecode"
         required: true
@@ -40,17 +44,20 @@ env:
   EpLabel: ${{ github.event.inputs.EpLabel }}
   EncSpeed: ${{ github.event.inputs.EncSpeed }}
   QScale: ${{ github.event.inputs.QScale }}
+  VidRes: ${{ github.event.inputs.VidRes }}
   ForceRecode: ${{ github.event.inputs.ForceRecode }}
   VapourCod3r_Hash: ${{ secrets.VapourCod3r_Hash }}
   RCLONE_CONFIG_HASH: ${{ secrets.RCLONE_CONFIG_HASH }}
 
 jobs:
   generator:
-    name: "Prepare Matrix for Jobs"
+    name: "Matrix Preparation"
     runs-on: ubuntu-22.04
 
     outputs:
       latestRevision: ${{ steps.set-params.outputs.latestRevision }}
+      VidResW: ${{ steps.set-params.outputs.VidResW }}
+      VidResH: ${{ steps.set-params.outputs.VidResH }}
       matrix: ${{ steps.set-params.outputs.matrix }}
 
     steps:
@@ -75,7 +82,7 @@ jobs:
           eval 'set -o history' 2>/dev/null
 
   synthesizer:
-    name: "Synthesize Video with Vapour"
+    name: "Vapour Synthesizer"
     runs-on: ubuntu-22.04
     needs: generator
 
@@ -87,6 +94,8 @@ jobs:
     env:
       ChunkID: ${{ matrix.ChunkID }}
       latestRevision: ${{ needs.generator.outputs.latestRevision }}
+      VidResW: ${{ needs.generator.outputs.VidResW }}
+      VidResH: ${{ needs.generator.outputs.VidResH }}
 
     steps:
       - uses: actions/checkout@v3
@@ -106,12 +115,14 @@ jobs:
           eval 'set -o history' 2>/dev/null
 
   merger:
-    name: "Join Synthesized Video"
+    name: "Synthesized Video Joiner"
     runs-on: ubuntu-22.04
     needs: [generator, synthesizer]
 
     env:
       latestRevision: ${{ needs.generator.outputs.latestRevision }}
+      VidResW: ${{ needs.generator.outputs.VidResW }}
+      VidResH: ${{ needs.generator.outputs.VidResH }}
     steps:
       - uses: actions/checkout@v3
         with:
