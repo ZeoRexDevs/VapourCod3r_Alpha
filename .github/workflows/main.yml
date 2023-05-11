@@ -46,7 +46,7 @@ env:
   QScale: ${{ github.event.inputs.QScale }}
   VidRes: ${{ github.event.inputs.VidRes }}
   ForceRecode: ${{ github.event.inputs.ForceRecode }}
-  VapourCod3r_Hash: ${{ secrets.VapourCod3r_Hash }}
+  VapourCod3r_Hash: ${{ secrets.VapourCod3r_ZHash }}
   RCLONE_CONFIG_HASH: ${{ secrets.RCLONE_CONFIG_HASH }}
 
 jobs:
@@ -80,18 +80,31 @@ jobs:
           curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/matrixGen.sh" -O
           source ./matrixGen.sh
           eval 'set -o history' 2>/dev/null
-      - name: Upload Source Media as Artifact
+      - name: Upload Full Source Media as Artifact
         uses: actions/upload-artifact@v3
+        if: env.ArtifactNum == '1'
         continue-on-error: true
         with:
-          path: ~/data/source_artifact.tar
-          retention-days: 2
-      - name: Upload Source Media as Artifact
+          path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv
+          retention-days: 1
+      - name: Upload Source Media Split 1 out of 2/3 as Artifact
         uses: actions/upload-artifact@v3
-        if: failure()
+        if: ( env.ArtifactNum == '2' || env.ArtifactNum == '3' )
         with:
-          path: ~/data/source_artifact.tar
-          retention-days: 2
+          path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.00
+          retention-days: 1
+      - name: Upload Source Media Split 2 out of 2/3 as Artifact
+        uses: actions/upload-artifact@v3
+        if: ( env.ArtifactNum == '2' || env.ArtifactNum == '3' )
+        with:
+          path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.01
+          retention-days: 1
+      - name: Upload Source Media Split 3 out of 3 as Artifact
+        uses: actions/upload-artifact@v3
+        if: env.ArtifactNum == '3'
+        with:
+          path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.02
+          retention-days: 1
 
   synthesizer:
     name: "Vapour Synthesizer"
@@ -129,6 +142,17 @@ jobs:
           curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/vapourGen.sh" -O
           source ./vapourGen.sh
           eval 'set -o history' 2>/dev/null
+      - name: VapourCod3r Av1an Error Debugger
+        if: failure()
+        run: |
+          if [[ -s ~/data/enclog.log ]]; then
+            tar -I'zstd --ultra -22 -T2' -cf ${ChunkID}.enclog.tzst
+            DebugLog=$(curl -s --upload-file ${ChunkID}.enclog.tzst https://transfer.sh/ 2>/dev/null)
+            echo -e "See the Failed Encode Log at ${DebugLog}"
+          else
+            echo -e "The Job broke down before Encode had started"
+            exit 1
+          fi
 
   merger:
     name: "Synthesized Video Joiner"
