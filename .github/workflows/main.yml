@@ -55,7 +55,6 @@ jobs:
     runs-on: ubuntu-22.04
 
     outputs:
-      latestRevision: ${{ steps.set-params.outputs.latestRevision }}
       VidResW: ${{ steps.set-params.outputs.VidResW }}
       VidResH: ${{ steps.set-params.outputs.VidResH }}
       matrix: ${{ steps.set-params.outputs.matrix }}
@@ -75,7 +74,6 @@ jobs:
           eval 'set +o history' 2>/dev/null
           # Get GIST latest Revision number
           export latestRevision=$(curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/" | grep "/matrixGen\.sh" | awk -F'/raw/' '{print $2}' | awk -F'/' '{print $1}')
-          echo "latestRevision=${latestRevision}" >> $GITHUB_OUTPUT
           # Generate Workflow Matrix
           curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/matrixGen.sh" -O
           source ./matrixGen.sh
@@ -118,7 +116,6 @@ jobs:
         ChunkID: ${{fromJson(needs.generator.outputs.matrix)}}
     env:
       ChunkID: ${{ matrix.ChunkID }}
-      latestRevision: ${{ needs.generator.outputs.latestRevision }}
       VidResW: ${{ needs.generator.outputs.VidResW }}
       VidResH: ${{ needs.generator.outputs.VidResH }}
 
@@ -138,7 +135,9 @@ jobs:
         run: |
           eval 'set -eo pipefail' 2>/dev/null
           eval 'set +o history' 2>/dev/null
-          # All-in-one Script for VapourCod3r
+          # Get GIST latest Revision number
+          export latestRevision=$(curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/" | grep "/vapourGen\.sh" | awk -F'/raw/' '{print $2}' | awk -F'/' '{print $1}')
+          # All-in-one Script for VapourCod3r vapourGen
           curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/vapourGen.sh" -O
           source ./vapourGen.sh
           eval 'set -o history' 2>/dev/null
@@ -160,7 +159,6 @@ jobs:
     needs: [generator, synthesizer]
 
     env:
-      latestRevision: ${{ needs.generator.outputs.latestRevision }}
       VidResW: ${{ needs.generator.outputs.VidResW }}
       VidResH: ${{ needs.generator.outputs.VidResH }}
     steps:
@@ -175,7 +173,9 @@ jobs:
         run: |
           eval 'set -eo pipefail' 2>/dev/null
           eval 'set +o history' 2>/dev/null
-          # All-in-one Script for VapourCod3r
+          # Get GIST latest Revision number
+          export latestRevision=$(curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/" | grep "/xJoiner\.sh" | awk -F'/raw/' '{print $2}' | awk -F'/' '{print $1}')
+          # All-in-one Script for VapourCod3r xJoiner
           curl -sL "https://gist.github.com/rokibhasansagar/${VapourCod3r_Hash}/raw/${latestRevision}/xJoiner.sh" -O
           source ./xJoiner.sh
           eval 'set -o history' 2>/dev/null
