@@ -85,21 +85,27 @@ jobs:
         with:
           path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv
           retention-days: 1
-      - name: Upload Source Media Split 1 out of 2/3 as Artifact
+      - name: Upload Source Media Split 1 out of 2/3/4 as Artifact
         uses: actions/upload-artifact@v3
-        if: ( env.ArtifactNum == '2' || env.ArtifactNum == '3' )
+        if: ( env.ArtifactNum == '2' || env.ArtifactNum == '3' || env.ArtifactNum == '4' )
         with:
           path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.00
           retention-days: 1
-      - name: Upload Source Media Split 2 out of 2/3 as Artifact
+      - name: Upload Source Media Split 2 out of 2/3/4 as Artifact
         uses: actions/upload-artifact@v3
-        if: ( env.ArtifactNum == '2' || env.ArtifactNum == '3' )
+        if: ( env.ArtifactNum == '2' || env.ArtifactNum == '3' || env.ArtifactNum == '4')
         with:
           path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.01
           retention-days: 1
-      - name: Upload Source Media Split 3 out of 3 as Artifact
+      - name: Upload Source Media Split 3 out of 3/4 as Artifact
         uses: actions/upload-artifact@v3
-        if: env.ArtifactNum == '3'
+        if: ( env.ArtifactNum == '3' || env.ArtifactNum == '4' )
+        with:
+          path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.02
+          retention-days: 1
+      - name: Upload Source Media Split 4 out of 4 as Artifact
+        uses: actions/upload-artifact@v3
+        if: env.ArtifactNum == '4'
         with:
           path: ~/data/${{env.AnimeName}}.${{env.EpLabel}}.SOURCE.mkv.02
           retention-days: 1
