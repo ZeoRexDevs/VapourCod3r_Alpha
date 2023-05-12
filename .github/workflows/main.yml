@@ -34,8 +34,13 @@ on:
         type: string
         default: "576p"
       ForceRecode:
-        description: "ForceRecode"
+        description: "ForceRecode Previous Chunks"
         required: true
+        type: boolean
+        default: false
+      MergeOnly:
+        description: "Only Merge Previously Encoded File"
+        required: false
         type: boolean
         default: false
 
@@ -46,12 +51,14 @@ env:
   QScale: ${{ github.event.inputs.QScale }}
   VidRes: ${{ github.event.inputs.VidRes }}
   ForceRecode: ${{ github.event.inputs.ForceRecode }}
+  MergeOnly: ${{ github.event.inputs.MergeOnly }}
   VapourCod3r_Hash: ${{ secrets.VapourCod3r_ZHash }}
   RCLONE_CONFIG_HASH: ${{ secrets.RCLONE_CONFIG_HASH }}
 
 jobs:
   generator:
     name: "Matrix Preparation"
+    if: github.event.inputs.MergeOnly != 'true'
     runs-on: ubuntu-22.04
 
     outputs:
@@ -112,6 +119,7 @@ jobs:
 
   synthesizer:
     name: "Vapour Synthesizer"
+    if: github.event.inputs.MergeOnly != 'true'
     runs-on: ubuntu-22.04
     needs: generator
 
@@ -161,6 +169,7 @@ jobs:
 
   merger:
     name: "Synthesized Video Joiner"
+    if: ( github.event.inputs.MergeOnly == 'true' && !cancelled() ) || success()
     runs-on: ubuntu-22.04
     needs: [generator, synthesizer]
 
