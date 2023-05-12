@@ -1,6 +1,6 @@
 name: VapourCod3r Alpha
 
-run-name: "VapourCod3r for ${{ inputs.AnimeName }} ${{ inputs.EpLabel }} with Q${{ inputs.QScale }}/CPU${{ inputs.EncSpeed }}"
+run-name: "${{ inputs.AnimeName }} ${{ inputs.EpLabel }} - Q${{ inputs.QScale }}/CPU${{ inputs.EncSpeed }}"
 
 on:
   workflow_dispatch:
@@ -11,6 +11,9 @@ on:
         type: choice
         options:
         - "Oshi.no.Ko"
+        - "Heavenly.Delusion"
+        - "Hells.Paradise.Jigokuraku"
+        - "Insomniacs.After.School"
       EpLabel:
         description: "EpLabel, S0[0-9]E[0-9][0-9]"
         required: true
