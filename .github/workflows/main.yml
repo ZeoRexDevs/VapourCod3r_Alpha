@@ -27,6 +27,7 @@ on:
         - "2"
         - "3"
         - "4"
+        - "1"
       QScale:
         description: "QScale, 13~43"
         required: true
