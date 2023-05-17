@@ -163,6 +163,7 @@ jobs:
         if: failure()
         run: |
           if [[ -s ~/data/enclog.log ]]; then
+            sudo chown -R runner ~/data
             tar -I'zstd --ultra -22 -T2' -cf ${ChunkID}.enclog.tzst
             DebugLog=$(curl -s --upload-file ${ChunkID}.enclog.tzst https://transfer.sh/ 2>/dev/null)
             echo -e "See the Failed Encode Log at ${DebugLog}"
