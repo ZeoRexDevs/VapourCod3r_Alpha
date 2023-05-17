@@ -1,6 +1,6 @@
 name: VapourCod3r Alpha
 
-run-name: "${{ inputs.AnimeName }} ${{ inputs.EpLabel }} - Q${{ inputs.QScale }}/CPU${{ inputs.EncSpeed }}"
+run-name: "${{ inputs.AnimeName }} ${{ inputs.EpLabel }} - ${{ inputs.VidRes }} - Q${{ inputs.QScale }}/CPU${{ inputs.EncSpeed }}"
 
 on:
   workflow_dispatch:
